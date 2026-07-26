@@ -1,1 +1,20 @@
+@import '@fontsource/inter';
 @import 'tailwindcss';
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, 'Segoe UI', Roboto, sans-serif;
+
+  background: #f5f7fa;
+  color: #29445f;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
