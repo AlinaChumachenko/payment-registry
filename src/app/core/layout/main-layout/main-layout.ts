@@ -5,6 +5,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-main-layout',
+  standalone: true,
   imports: [Header, Sidebar, RouterOutlet],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.css',

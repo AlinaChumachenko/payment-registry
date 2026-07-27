@@ -1,6 +1,6 @@
 import { Payment } from './payment';
 
 export interface PaymentsResponse {
-  payments: Payment[];
+  items: Payment[];
   total: number;
 }

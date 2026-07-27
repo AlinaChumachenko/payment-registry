@@ -1,0 +1,8 @@
+:host {
+  display: block;
+}
+
+.payments-grid {
+  width: 100%;
+  height: 500px;
+}
