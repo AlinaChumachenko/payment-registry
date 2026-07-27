@@ -15,11 +15,12 @@ export class PaymentsService {
 
   // Load payments from the server
   // Завантажуємо платежі із сервера
-  getPayments(page: number, size: number): Observable<PaymentsResponse> {
+  getPayments(page: number, size: number, sort: string): Observable<PaymentsResponse> {
     return this.http.get<PaymentsResponse>(this.apiUrl, {
       params: {
         page,
         size,
+        sort,
       },
     });
   }

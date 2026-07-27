@@ -109,31 +109,63 @@ app.get('/payments', (req, res) => {
     );
   }
   // Apply sorting
-  // Сортування
-  const [sortField, sortDirection] = sort.split(':');
+  const sortableFields: (keyof Payment)[] = [
+    'docNumber',
+    'date',
+    'payerName',
+    'payerIban',
+    'receiverName',
+    'receiverIban',
+    'amount',
+    'currency',
+    'status',
+    'comment',
+  ];
 
-  if (sortField) {
+  const sortRules = sort
+    .split(',')
+    .map((rule) => {
+      const [field, direction] = rule.split(':');
+
+      return {
+        field,
+        direction,
+      };
+    })
+    .filter(
+      (
+        rule
+      ): rule is {
+        field: keyof Payment;
+        direction: 'asc' | 'desc';
+      } =>
+        sortableFields.includes(rule.field as keyof Payment) &&
+        (rule.direction === 'asc' || rule.direction === 'desc')
+    );
+
+  if (sortRules.length > 0) {
     processedPayments.sort((a, b) => {
-      let comparison = 0;
+      for (const rule of sortRules) {
+        const firstValue = a[rule.field];
+        const secondValue = b[rule.field];
 
-      if (sortField === 'amount') {
-        comparison = a.amount - b.amount;
+        let comparison = 0;
+
+        if (rule.field === 'amount') {
+          comparison = Number(firstValue) - Number(secondValue);
+        } else if (rule.field === 'date') {
+          comparison =
+            new Date(String(firstValue)).getTime() - new Date(String(secondValue)).getTime();
+        } else {
+          comparison = String(firstValue ?? '').localeCompare(String(secondValue ?? ''), 'uk');
+        }
+
+        if (comparison !== 0) {
+          return rule.direction === 'desc' ? -comparison : comparison;
+        }
       }
 
-      if (sortField === 'date') {
-        comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
-      }
-
-      if (
-        sortField === 'docNumber' ||
-        sortField === 'payerName' ||
-        sortField === 'receiverName' ||
-        sortField === 'currency' ||
-        sortField === 'status'
-      ) {
-        comparison = a[sortField].localeCompare(b[sortField], 'uk');
-      }
-      return sortDirection === 'desc' ? -comparison : comparison;
+      return 0;
     });
   }
   // Apply pagination

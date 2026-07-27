@@ -20,6 +20,7 @@ export class PaymentsStore {
   private readonly errorState = signal<string | null>(null);
   private readonly pageState = signal(1);
   private readonly pageSizeState = signal(25);
+  private readonly sortState = signal('');
 
   // Public read-only state
   // Публічний стан лише для читання
@@ -29,6 +30,7 @@ export class PaymentsStore {
   readonly error = this.errorState.asReadonly();
   readonly page = this.pageState.asReadonly();
   readonly pageSize = this.pageSizeState.asReadonly();
+  readonly sort = this.sortState.asReadonly();
 
   // Load payments from the server
   // Завантажуємо платежі із сервера
@@ -37,7 +39,7 @@ export class PaymentsStore {
     this.errorState.set(null);
 
     this.paymentsService
-      .getPayments(this.pageState(), this.pageSizeState())
+      .getPayments(this.pageState(), this.pageSizeState(), this.sortState())
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
@@ -68,6 +70,14 @@ export class PaymentsStore {
   // Змінюємо розмір сторінки
   setPageSize(size: number): void {
     this.pageSizeState.set(size);
+    this.pageState.set(1);
+    this.loadPayments();
+  }
+
+  // Change server-side sorting
+  // Змінюємо серверне сортування
+  setSort(sort: string): void {
+    this.sortState.set(sort);
     this.pageState.set(1);
     this.loadPayments();
   }

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
-import { AllCommunityModule, ColDef, ModuleRegistry } from 'ag-grid-community';
+import { AllCommunityModule, ColDef, ModuleRegistry, SortChangedEvent } from 'ag-grid-community';
 import { Payment } from '../../models/payment';
 import { PaymentsStore } from '../../stores/payments.store';
 
@@ -15,6 +15,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 })
 export class PaymentsPage {
   private readonly paymentsStore = inject(PaymentsStore);
+
   // Define grid columns
   // Описуємо колонки таблиці
   readonly columnDefs: ColDef<Payment>[] = [
@@ -93,6 +94,20 @@ export class PaymentsPage {
     this.paymentsStore.setPage(this.page() + 1);
   }
 
+  // Handle grid sorting changes
+  // Обробляємо зміну сортування в таблиці
+  onSortChanged(event: SortChangedEvent<Payment>): void {
+    const sort = event.api
+      .getColumnState()
+      .filter((column) => column.sort !== null)
+      .sort((a, b) => (a.sortIndex ?? 0) - (b.sortIndex ?? 0))
+      .map((column) => `${column.colId}:${column.sort}`)
+      .join(',');
+
+    this.paymentsStore.setSort(sort);
+  }
+  // Change page size
+  // Змінюємо розмір сторінки
   changePageSize(size: number): void {
     this.paymentsStore.setPageSize(size);
   }

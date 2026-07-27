@@ -17,6 +17,7 @@
       class="payments-grid"
       [columnDefs]="columnDefs"
       [rowData]="rowData()"
+      (sortChanged)="onSortChanged($event)"
     ></ag-grid-angular>
   </div>
 
