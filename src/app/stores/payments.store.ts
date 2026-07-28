@@ -1,6 +1,6 @@
 import { DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize } from 'rxjs';
+import { catchError, finalize, of, Subject, switchMap } from 'rxjs';
 
 import { Payment } from '../models/payment';
 import { PaymentsService } from '../services/payments.service';
@@ -13,6 +13,8 @@ import { PaymentsFilters } from '../models/payments-filters';
 export class PaymentsStore {
   private readonly paymentsService = inject(PaymentsService);
   private readonly destroyRef = inject(DestroyRef);
+
+  private readonly loadPaymentsTrigger = new Subject<void>();
 
   // Internal writable state
   // Внутрішній стан, який може змінювати тільки store
@@ -49,52 +51,63 @@ export class PaymentsStore {
   readonly sort = this.sortState.asReadonly();
   readonly filters = this.filtersState.asReadonly();
 
+  constructor() {
+    this.loadPaymentsTrigger
+      .pipe(
+        switchMap(() => {
+          this.loadingState.set(true);
+          this.errorState.set(null);
+
+          const filters = this.filtersState();
+
+          const params: PaymentsQueryParams = {
+            page: this.pageState(),
+            size: this.pageSizeState(),
+            sort: this.sortState(),
+
+            docNumber: filters.docNumber,
+            payerName: filters.payerName,
+            receiverName: filters.receiverName,
+
+            amountFrom: filters.amountFrom,
+            amountTo: filters.amountTo,
+
+            dateFrom: filters.dateFrom,
+            dateTo: filters.dateTo,
+
+            currency: filters.currency,
+            status: filters.status,
+          };
+
+          return this.paymentsService.getPayments(params).pipe(
+            catchError(() => {
+              this.itemsState.set([]);
+              this.totalState.set(0);
+              this.errorState.set('Не вдалося завантажити платежі');
+
+              return of(null);
+            }),
+            finalize(() => {
+              this.loadingState.set(false);
+            })
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((response) => {
+        if (response === null) {
+          return;
+        }
+
+        this.itemsState.set(response.items);
+        this.totalState.set(response.total);
+      });
+  }
+
   // Load payments from the server
   // Завантажуємо платежі із сервера
   loadPayments(): void {
-    this.loadingState.set(true);
-    this.errorState.set(null);
-
-    const filters = this.filtersState();
-
-    const params: PaymentsQueryParams = {
-      page: this.pageState(),
-      size: this.pageSizeState(),
-      sort: this.sortState(),
-
-      docNumber: filters.docNumber,
-      payerName: filters.payerName,
-      receiverName: filters.receiverName,
-
-      amountFrom: filters.amountFrom,
-      amountTo: filters.amountTo,
-
-      dateFrom: filters.dateFrom,
-      dateTo: filters.dateTo,
-
-      currency: filters.currency,
-      status: filters.status,
-    };
-
-    this.paymentsService
-      .getPayments(params)
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => {
-          this.loadingState.set(false);
-        })
-      )
-      .subscribe({
-        next: (response) => {
-          this.itemsState.set(response.items);
-          this.totalState.set(response.total);
-        },
-        error: () => {
-          this.itemsState.set([]);
-          this.totalState.set(0);
-          this.errorState.set('Не вдалося завантажити платежі');
-        },
-      });
+    this.loadPaymentsTrigger.next();
   }
 
   // Change current page

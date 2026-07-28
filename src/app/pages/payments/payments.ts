@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
 import { AllCommunityModule, ColDef, ModuleRegistry, SortChangedEvent } from 'ag-grid-community';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -20,6 +21,8 @@ export class PaymentsPage {
   private readonly paymentsStore = inject(PaymentsStore);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly filtersForm = this.fb.group({
     docNumber: this.fb.nonNullable.control(''),
@@ -114,7 +117,23 @@ export class PaymentsPage {
   readonly canGoToNextPage = computed(() => this.page() < this.totalPages());
 
   constructor() {
-    this.paymentsStore.loadPayments();
+    this.filtersForm.patchValue({
+      docNumber: this.route.snapshot.queryParamMap.get('docNumber') ?? '',
+      payerName: this.route.snapshot.queryParamMap.get('payerName') ?? '',
+      receiverName: this.route.snapshot.queryParamMap.get('receiverName') ?? '',
+    });
+
+    this.paymentsStore.setFilters({
+      docNumber: this.filtersForm.controls.docNumber.value,
+      payerName: this.filtersForm.controls.payerName.value,
+      receiverName: this.filtersForm.controls.receiverName.value,
+      amountFrom: this.filtersForm.controls.amountFrom.value,
+      amountTo: this.filtersForm.controls.amountTo.value,
+      dateFrom: this.filtersForm.controls.dateFrom.value,
+      dateTo: this.filtersForm.controls.dateTo.value,
+      currency: this.filtersForm.controls.currency.value,
+      status: this.filtersForm.controls.status.value,
+    });
 
     this.filtersForm.valueChanges
       .pipe(
@@ -135,6 +154,15 @@ export class PaymentsPage {
           dateTo: filters.dateTo ?? '',
           currency: filters.currency ?? '',
           status: filters.status ?? [],
+        });
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {
+            docNumber: filters.docNumber || null,
+            payerName: filters.payerName || null,
+            receiverName: filters.receiverName || null,
+          },
+          queryParamsHandling: 'merge',
         });
       });
   }
