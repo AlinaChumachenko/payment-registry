@@ -1,20 +1,52 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
 import { AllCommunityModule, ColDef, ModuleRegistry, SortChangedEvent } from 'ag-grid-community';
-import { Payment } from '../../models/payment';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Currency, Payment, PaymentStatus } from '../../models/payment';
 import { PaymentsStore } from '../../stores/payments.store';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 @Component({
   selector: 'app-payments',
   standalone: true,
-  imports: [AgGridAngular],
+  imports: [AgGridAngular, ReactiveFormsModule],
   templateUrl: './payments.html',
   styleUrl: './payments.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaymentsPage {
   private readonly paymentsStore = inject(PaymentsStore);
+  private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly filtersForm = this.fb.group({
+    docNumber: this.fb.nonNullable.control(''),
+    payerName: this.fb.nonNullable.control(''),
+    receiverName: this.fb.nonNullable.control(''),
+
+    amountFrom: this.fb.control<number | null>(null),
+    amountTo: this.fb.control<number | null>(null),
+
+    dateFrom: this.fb.nonNullable.control(''),
+    dateTo: this.fb.nonNullable.control(''),
+
+    currency: this.fb.nonNullable.control<Currency | ''>(''),
+    status: this.fb.nonNullable.control<PaymentStatus[]>([]),
+  });
+
+  readonly currencyOptions: Currency[] = ['UAH', 'USD', 'EUR'];
+
+  readonly statusOptions: {
+    value: PaymentStatus;
+    label: string;
+  }[] = [
+    { value: 'draft', label: 'Чернетка' },
+    { value: 'pending', label: 'Очікує підпису' },
+    { value: 'signed', label: 'Підписаний' },
+    { value: 'sent', label: 'Відправлений' },
+    { value: 'rejected', label: 'Відхилений' },
+  ];
 
   // Define grid columns
   // Описуємо колонки таблиці
@@ -82,6 +114,20 @@ export class PaymentsPage {
 
   constructor() {
     this.paymentsStore.loadPayments();
+
+    this.filtersForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((filters) => {
+      this.paymentsStore.setFilters({
+        docNumber: filters.docNumber ?? '',
+        payerName: filters.payerName ?? '',
+        receiverName: filters.receiverName ?? '',
+        amountFrom: filters.amountFrom ?? null,
+        amountTo: filters.amountTo ?? null,
+        dateFrom: filters.dateFrom ?? '',
+        dateTo: filters.dateTo ?? '',
+        currency: filters.currency ?? '',
+        status: filters.status ?? [],
+      });
+    });
   }
 
   goToPreviousPage(): void {
@@ -110,5 +156,19 @@ export class PaymentsPage {
   // Змінюємо розмір сторінки
   changePageSize(size: number): void {
     this.paymentsStore.setPageSize(size);
+  }
+
+  resetFilters(): void {
+    this.filtersForm.reset({
+      docNumber: '',
+      payerName: '',
+      receiverName: '',
+      amountFrom: null,
+      amountTo: null,
+      dateFrom: '',
+      dateTo: '',
+      currency: '',
+      status: [],
+    });
   }
 }

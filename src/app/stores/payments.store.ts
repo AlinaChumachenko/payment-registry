@@ -4,6 +4,8 @@ import { finalize } from 'rxjs';
 
 import { Payment } from '../models/payment';
 import { PaymentsService } from '../services/payments.service';
+import { PaymentsQueryParams } from '../models/payments-query-params';
+import { PaymentsFilters } from '../models/payments-filters';
 
 @Injectable({
   providedIn: 'root',
@@ -21,6 +23,20 @@ export class PaymentsStore {
   private readonly pageState = signal(1);
   private readonly pageSizeState = signal(25);
   private readonly sortState = signal('');
+  private readonly filtersState = signal<PaymentsFilters>({
+    docNumber: '',
+    payerName: '',
+    receiverName: '',
+
+    amountFrom: null,
+    amountTo: null,
+
+    dateFrom: '',
+    dateTo: '',
+
+    currency: '',
+    status: [],
+  });
 
   // Public read-only state
   // Публічний стан лише для читання
@@ -31,6 +47,7 @@ export class PaymentsStore {
   readonly page = this.pageState.asReadonly();
   readonly pageSize = this.pageSizeState.asReadonly();
   readonly sort = this.sortState.asReadonly();
+  readonly filters = this.filtersState.asReadonly();
 
   // Load payments from the server
   // Завантажуємо платежі із сервера
@@ -38,8 +55,29 @@ export class PaymentsStore {
     this.loadingState.set(true);
     this.errorState.set(null);
 
+    const filters = this.filtersState();
+
+    const params: PaymentsQueryParams = {
+      page: this.pageState(),
+      size: this.pageSizeState(),
+      sort: this.sortState(),
+
+      docNumber: filters.docNumber,
+      payerName: filters.payerName,
+      receiverName: filters.receiverName,
+
+      amountFrom: filters.amountFrom,
+      amountTo: filters.amountTo,
+
+      dateFrom: filters.dateFrom,
+      dateTo: filters.dateTo,
+
+      currency: filters.currency,
+      status: filters.status,
+    };
+
     this.paymentsService
-      .getPayments(this.pageState(), this.pageSizeState(), this.sortState())
+      .getPayments(params)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
@@ -78,6 +116,12 @@ export class PaymentsStore {
   // Змінюємо серверне сортування
   setSort(sort: string): void {
     this.sortState.set(sort);
+    this.pageState.set(1);
+    this.loadPayments();
+  }
+
+  setFilters(filters: PaymentsFilters): void {
+    this.filtersState.set(filters);
     this.pageState.set(1);
     this.loadPayments();
   }

@@ -3,6 +3,7 @@ import { inject, Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { PaymentsResponse } from '../models/payments-response';
+import { PaymentsQueryParams } from '../models/payments-query-params';
 
 @Injectable({
   providedIn: 'root',
@@ -15,12 +16,25 @@ export class PaymentsService {
 
   // Load payments from the server
   // Завантажуємо платежі із сервера
-  getPayments(page: number, size: number, sort: string): Observable<PaymentsResponse> {
+  getPayments(params: PaymentsQueryParams): Observable<PaymentsResponse> {
     return this.http.get<PaymentsResponse>(this.apiUrl, {
       params: {
-        page,
-        size,
-        sort,
+        page: params.page,
+        size: params.size,
+        sort: params.sort,
+
+        docNumber: params.docNumber,
+        payerName: params.payerName,
+        receiverName: params.receiverName,
+
+        amountFrom: params.amountFrom ?? '',
+        amountTo: params.amountTo ?? '',
+
+        dateFrom: params.dateFrom,
+        dateTo: params.dateTo,
+
+        currency: params.currency,
+        status: params.status.join(','),
       },
     });
   }
