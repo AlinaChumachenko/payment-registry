@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
 import { AllCommunityModule, ColDef, ModuleRegistry, SortChangedEvent } from 'ag-grid-community';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { Currency, Payment, PaymentStatus } from '../../models/payment';
 import { PaymentsStore } from '../../stores/payments.store';
 
@@ -117,7 +117,13 @@ export class PaymentsPage {
     this.paymentsStore.loadPayments();
 
     this.filtersForm.valueChanges
-      .pipe(debounceTime(300), takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(
+          (previous, current) => JSON.stringify(previous) === JSON.stringify(current)
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe((filters) => {
         this.paymentsStore.setFilters({
           docNumber: filters.docNumber ?? '',
