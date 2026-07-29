@@ -90,6 +90,11 @@ export class PaymentsPage {
     {
       field: 'amount',
       headerName: 'Amount',
+      valueFormatter: (params) =>
+        new Intl.NumberFormat('uk-UA', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(params.value),
     },
     {
       field: 'currency',
