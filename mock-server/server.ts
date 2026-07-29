@@ -20,6 +20,10 @@ function readPayments(): Payment[] {
 // Handle payments list requests
 // Обробка запитів на отримання списку платежів
 app.get('/payments', (req, res) => {
+  // return res.status(500).json({
+  //   message: 'Тестова помилка сервера',
+  // });
+
   const payments = readPayments();
 
   const requestedPage = Number(req.query['page'] ?? 1);

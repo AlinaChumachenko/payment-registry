@@ -270,6 +270,9 @@ export class PaymentsPage {
     this.paymentsStore.setPageSize(size);
   }
 
+  retryLoad(): void {
+    this.paymentsStore.loadPayments();
+  }
   resetFilters(): void {
     this.filtersForm.reset({
       docNumber: '',
