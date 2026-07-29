@@ -70,6 +70,14 @@ export class PaymentsPage {
     {
       field: 'date',
       headerName: 'Date',
+      valueFormatter: (params) =>
+        new Intl.DateTimeFormat('uk-UA', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }).format(new Date(params.value)),
     },
     {
       field: 'payerName',
