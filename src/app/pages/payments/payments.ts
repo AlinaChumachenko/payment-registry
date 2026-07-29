@@ -52,6 +52,14 @@ export class PaymentsPage {
     { value: 'rejected', label: 'Відхилений' },
   ];
 
+  private readonly statusLabels: Record<PaymentStatus, string> = {
+    draft: 'Чернетка',
+    pending: 'Очікує підпису',
+    signed: 'Підписаний',
+    sent: 'Відправлений',
+    rejected: 'Відхилений',
+  };
+
   // Define grid columns
   // Описуємо колонки таблиці
   readonly columnDefs: ColDef<Payment>[] = [
@@ -89,7 +97,8 @@ export class PaymentsPage {
     },
     {
       field: 'status',
-      headerName: 'Status',
+      headerName: 'Статус',
+      valueFormatter: (params) => this.statusLabels[params.value as PaymentStatus],
     },
     {
       field: 'comment',
@@ -108,6 +117,12 @@ export class PaymentsPage {
   // Обчислюємо загальну кількість сторінок
   readonly totalPages = computed(() => Math.ceil(this.total() / this.pageSize()));
 
+  private getNumberQueryParam(name: string): number | null {
+    const value = this.route.snapshot.queryParamMap.get(name);
+
+    return value === null ? null : Number(value);
+  }
+
   // Check whether the previous page is available
   // Перевіряємо, чи доступна попередня сторінка
   readonly canGoToPreviousPage = computed(() => this.page() > 1);
@@ -121,6 +136,12 @@ export class PaymentsPage {
       docNumber: this.route.snapshot.queryParamMap.get('docNumber') ?? '',
       payerName: this.route.snapshot.queryParamMap.get('payerName') ?? '',
       receiverName: this.route.snapshot.queryParamMap.get('receiverName') ?? '',
+      amountFrom: this.getNumberQueryParam('amountFrom'),
+      amountTo: this.getNumberQueryParam('amountTo'),
+      dateFrom: this.route.snapshot.queryParamMap.get('dateFrom') ?? '',
+      dateTo: this.route.snapshot.queryParamMap.get('dateTo') ?? '',
+      currency: (this.route.snapshot.queryParamMap.get('currency') as Currency | null) ?? '',
+      status: this.route.snapshot.queryParamMap.getAll('status') as PaymentStatus[],
     });
 
     this.paymentsStore.setFilters({
@@ -158,9 +179,16 @@ export class PaymentsPage {
         this.router.navigate([], {
           relativeTo: this.route,
           queryParams: {
+            page: this.page() > 1 ? this.page() : null,
             docNumber: filters.docNumber || null,
             payerName: filters.payerName || null,
             receiverName: filters.receiverName || null,
+            amountFrom: filters.amountFrom ?? null,
+            amountTo: filters.amountTo ?? null,
+            dateFrom: filters.dateFrom || null,
+            dateTo: filters.dateTo || null,
+            currency: filters.currency || null,
+            status: filters.status?.length ? filters.status : null,
           },
           queryParamsHandling: 'merge',
         });
