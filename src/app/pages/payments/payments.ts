@@ -2,7 +2,13 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject } from
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
-import { AllCommunityModule, ColDef, ModuleRegistry, SortChangedEvent } from 'ag-grid-community';
+import {
+  AllCommunityModule,
+  ColDef,
+  ModuleRegistry,
+  SortChangedEvent,
+  ICellRendererParams,
+} from 'ag-grid-community';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { Currency, Payment, PaymentStatus } from '../../models/payment';
@@ -111,7 +117,35 @@ export class PaymentsPage {
     {
       field: 'status',
       headerName: 'Статус',
-      valueFormatter: (params) => this.statusLabels[params.value as PaymentStatus],
+      cellRenderer: (params: ICellRendererParams<Payment>) => {
+        const status = params.value as PaymentStatus;
+
+        const statusClasses: Record<PaymentStatus, string> = {
+          draft: 'bg-slate-100 text-slate-700',
+          pending: 'bg-amber-100 text-amber-800',
+          signed: 'bg-blue-100 text-blue-800',
+          sent: 'bg-green-100 text-green-800',
+          rejected: 'bg-red-100 text-red-800',
+        };
+
+        const badge = document.createElement('span');
+
+        badge.className = [
+          'inline-flex',
+          'items-center',
+          'rounded-full',
+          'px-2.5',
+          'py-1',
+          'text-xs',
+          'font-semibold',
+          'whitespace-nowrap',
+          statusClasses[status],
+        ].join(' ');
+
+        badge.textContent = this.statusLabels[status];
+
+        return badge;
+      },
     },
     {
       field: 'comment',
