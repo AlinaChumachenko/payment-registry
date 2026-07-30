@@ -180,10 +180,12 @@ app.get('/payments', (req, res) => {
   const items = processedPayments.slice(startIndex, endIndex);
   // Return the paginated result
   // Повертаємо результат із пагінацією
-  res.json({
-    items,
-    total: processedPayments.length,
-  });
+  setTimeout(() => {
+    res.json({
+      items,
+      total: processedPayments.length,
+    });
+  }, 2000);
 });
 
 app.listen(PORT, () => {
