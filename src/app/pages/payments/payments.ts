@@ -13,6 +13,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { Currency, Payment, PaymentStatus } from '../../models/payment';
 import { PaymentsStore } from '../../stores/payments.store';
+import { PAYMENT_STATUS_LABELS, formatPaymentAmount } from '../../shared/payment-formatters';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 @Component({
@@ -58,14 +59,7 @@ export class PaymentsPage {
     { value: 'rejected', label: 'Відхилений' },
   ];
 
-  private readonly statusLabels: Record<PaymentStatus, string> = {
-    draft: 'Чернетка',
-    pending: 'Очікує підпису',
-    signed: 'Підписаний',
-    sent: 'Відправлений',
-    rejected: 'Відхилений',
-  };
-
+  readonly statusLabels = PAYMENT_STATUS_LABELS;
   // Define grid columns
   // Описуємо колонки таблиці
   readonly columnDefs: ColDef<Payment>[] = [
@@ -104,11 +98,10 @@ export class PaymentsPage {
     {
       field: 'amount',
       headerName: 'Amount',
-      valueFormatter: (params) =>
-        new Intl.NumberFormat('uk-UA', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(params.value),
+      valueFormatter: (params) => formatPaymentAmount(params.value),
+      cellClassRules: {
+        'text-red-600': (params) => params.value < 0,
+      },
     },
     {
       field: 'currency',
@@ -270,6 +263,13 @@ export class PaymentsPage {
     this.paymentsStore.setPageSize(size);
   }
 
+  onRowClicked(payment: Payment | undefined): void {
+    if (!payment) {
+      return;
+    }
+
+    this.router.navigate(['/payments', payment.id]);
+  }
   retryLoad(): void {
     this.paymentsStore.loadPayments();
   }

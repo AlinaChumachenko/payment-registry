@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Inject, Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { PaymentsResponse } from '../models/payments-response';
 import { PaymentsQueryParams } from '../models/payments-query-params';
+import { Payment } from '../models/payment';
 
 @Injectable({
   providedIn: 'root',
@@ -37,5 +38,9 @@ export class PaymentsService {
         status: params.status.join(','),
       },
     });
+  }
+
+  getPaymentById(id: string): Observable<Payment> {
+    return this.http.get<Payment>(`${this.apiUrl}/${id}`);
   }
 }

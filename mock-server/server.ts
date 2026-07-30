@@ -188,6 +188,22 @@ app.get('/payments', (req, res) => {
   }, 2000);
 });
 
+// Handle a single payment request
+// Обробка запиту на отримання одного платежу
+app.get('/payments/:id', (req, res) => {
+  const payments = readPayments();
+
+  const payment = payments.find((item) => String(item.id) === req.params['id']);
+
+  if (!payment) {
+    return res.status(404).json({
+      message: 'Платіж не знайдено',
+    });
+  }
+
+  return res.json(payment);
+});
+
 app.listen(PORT, () => {
   console.log(`Mock server listening on port ${PORT}`);
 });

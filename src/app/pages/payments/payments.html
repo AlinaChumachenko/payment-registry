@@ -185,6 +185,7 @@
       [columnDefs]="columnDefs"
       [rowData]="rowData()"
       (sortChanged)="onSortChanged($event)"
+      (rowClicked)="onRowClicked($event.data)"
     ></ag-grid-angular>
     }
   </div>

@@ -1,0 +1,85 @@
+<section class="grid gap-6">
+  <button
+    type="button"
+    class="w-fit text-sm text-sky-700 transition hover:text-sky-900"
+    (click)="goBack()"
+  >
+    ← Назад до реєстру
+  </button>
+  <div>
+    <h1 class="text-2xl font-semibold text-slate-800">Деталі платежу</h1>
+
+    <p class="mt-1 text-sm text-slate-500">Повна інформація про платіжну операцію</p>
+  </div>
+
+  @if (payment(); as paymentData) {
+  <div class="grid gap-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="grid gap-4 md:grid-cols-2">
+      <div>
+        <p class="text-sm text-slate-500">Номер документа</p>
+        <p class="mt-1 font-medium text-slate-800">
+          {{ paymentData.docNumber }}
+        </p>
+      </div>
+
+      <div>
+        <p class="text-sm text-slate-500">Дата</p>
+        <p class="mt-1 font-medium text-slate-800">
+          {{ paymentData.date | date : 'dd.MM.yyyy, HH:mm' }}
+        </p>
+      </div>
+
+      <div>
+        <p class="text-sm text-slate-500">Платник</p>
+        <p class="mt-1 font-medium text-slate-800">
+          {{ paymentData.payerName }}
+        </p>
+      </div>
+
+      <div>
+        <p class="text-sm text-slate-500">IBAN платника</p>
+        <p class="mt-1 font-medium text-slate-800">
+          {{ paymentData.payerIban }}
+        </p>
+      </div>
+
+      <div>
+        <p class="text-sm text-slate-500">Отримувач</p>
+        <p class="mt-1 font-medium text-slate-800">
+          {{ paymentData.receiverName }}
+        </p>
+      </div>
+
+      <div>
+        <p class="text-sm text-slate-500">IBAN отримувача</p>
+        <p class="mt-1 font-medium text-slate-800">
+          {{ paymentData.receiverIban }}
+        </p>
+      </div>
+
+      <div>
+        <p class="text-sm text-slate-500">Сума</p>
+        <p class="mt-1 font-medium text-slate-800">
+          {{ formatAmount(paymentData.amount) }}
+        </p>
+      </div>
+
+      <div>
+        <p class="text-sm text-slate-500">Статус</p>
+        <p class="mt-1 font-medium text-slate-800">
+          {{ statusLabels[paymentData.status] }}
+        </p>
+      </div>
+    </div>
+
+    <div>
+      <p class="text-sm text-slate-500">Коментар</p>
+      <p class="mt-1 font-medium text-slate-800">
+        {{ paymentData.comment || 'Немає коментаря' }}
+      </p>
+    </div>
+  </div>
+  } @else {
+  <p class="text-sm text-slate-500">Завантаження платежу...</p>
+  }
+</section>
