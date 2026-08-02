@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -11,25 +18,34 @@ import {
 } from 'ag-grid-community';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
-import { Currency, Payment, PaymentStatus } from '../../models/payment';
+import {
+  CreatePayment as CreatePaymentPayload,
+  Currency,
+  Payment,
+  PaymentStatus,
+} from '../../models/payment';
 import { PaymentsStore } from '../../stores/payments.store';
 import { PAYMENT_STATUS_LABELS, formatPaymentAmount } from '../../shared/payment-formatters';
+import { CreatePayment } from '../create-payment/create-payment';
+import { PaymentsService } from '../../services/payments.service';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 @Component({
   selector: 'app-payments',
   standalone: true,
-  imports: [AgGridAngular, ReactiveFormsModule],
+  imports: [AgGridAngular, ReactiveFormsModule, CreatePayment],
   templateUrl: './payments.html',
   styleUrl: './payments.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaymentsPage {
   private readonly paymentsStore = inject(PaymentsStore);
+  private readonly paymentsService = inject(PaymentsService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  readonly isCreatePaymentOpen = signal(false);
 
   readonly filtersForm = this.fb.group({
     docNumber: this.fb.nonNullable.control(''),
@@ -269,6 +285,29 @@ export class PaymentsPage {
     }
 
     this.router.navigate(['/payments', payment.id]);
+  }
+
+  createPayment(payment: CreatePaymentPayload): void {
+    this.paymentsService
+      .createPayment(payment)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.closeCreatePayment();
+          this.paymentsStore.loadPayments();
+        },
+        error: () => {
+          console.error('Не вдалося створити платіж');
+        },
+      });
+  }
+
+  openCreatePayment(): void {
+    this.isCreatePaymentOpen.set(true);
+  }
+
+  closeCreatePayment(): void {
+    this.isCreatePaymentOpen.set(false);
   }
   retryLoad(): void {
     this.paymentsStore.loadPayments();

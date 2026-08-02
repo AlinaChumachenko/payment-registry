@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 import { PaymentsResponse } from '../models/payments-response';
 import { PaymentsQueryParams } from '../models/payments-query-params';
-import { Payment } from '../models/payment';
+import { CreatePayment, Payment } from '../models/payment';
 
 @Injectable({
   providedIn: 'root',
@@ -42,5 +42,9 @@ export class PaymentsService {
 
   getPaymentById(id: string): Observable<Payment> {
     return this.http.get<Payment>(`${this.apiUrl}/${id}`);
+  }
+
+  createPayment(payment: CreatePayment): Observable<Payment> {
+    return this.http.post<Payment>(this.apiUrl, payment);
   }
 }

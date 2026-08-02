@@ -1,0 +1,224 @@
+<section class="grid gap-6">
+  <div class="flex items-start justify-between gap-4">
+    <div>
+      <h2 id="create-payment-title" class="text-2xl font-semibold text-slate-800">Новий платіж</h2>
+
+      <p class="mt-1 text-sm text-slate-500">Заповніть реквізити платіжної операції</p>
+    </div>
+
+    <button
+      type="button"
+      class="text-2xl leading-none text-slate-400 transition hover:text-slate-700"
+      aria-label="Закрити"
+      (click)="close()"
+    >
+      ×
+    </button>
+  </div>
+
+  <form class="grid gap-6" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grid gap-4 md:grid-cols-2">
+      <label class="grid gap-1 text-sm text-slate-700">
+        <span>Номер документа</span>
+
+        <input
+          type="text"
+          formControlName="docNumber"
+          placeholder="PAY-2026-000123"
+          class="rounded-md border px-3 py-2 outline-none focus:border-sky-500"
+          [class.border-red-500]="
+            form.controls.docNumber.touched && form.controls.docNumber.invalid
+          "
+          [class.border-slate-300]="
+            !form.controls.docNumber.touched || form.controls.docNumber.valid
+          "
+        />
+
+        @if ( form.controls.docNumber.touched && form.controls.docNumber.hasError('required') ) {
+        <span class="text-xs text-red-600"> Номер документа обов’язковий </span>
+        }
+      </label>
+
+      <label class="grid gap-1 text-sm text-slate-700">
+        <span>Дата</span>
+
+        <input
+          type="date"
+          formControlName="date"
+          class="rounded-md border px-3 py-2 outline-none focus:border-sky-500"
+          [class.border-red-500]="form.controls.date.touched && form.controls.date.invalid"
+          [class.border-slate-300]="!form.controls.date.touched || form.controls.date.valid"
+        />
+
+        @if ( form.controls.date.touched && form.controls.date.hasError('required') ) {
+        <span class="text-xs text-red-600"> Дата обов’язкова </span>
+        }
+      </label>
+
+      <label class="grid gap-1 text-sm text-slate-700">
+        <span>Платник</span>
+
+        <input
+          type="text"
+          formControlName="payerName"
+          placeholder="Назва платника"
+          class="rounded-md border px-3 py-2 outline-none focus:border-sky-500"
+          [class.border-red-500]="
+            form.controls.payerName.touched && form.controls.payerName.invalid
+          "
+          [class.border-slate-300]="
+            !form.controls.payerName.touched || form.controls.payerName.valid
+          "
+        />
+
+        @if ( form.controls.payerName.touched && form.controls.payerName.hasError('required') ) {
+        <span class="text-xs text-red-600"> Платник обов’язковий </span>
+        }
+      </label>
+
+      <label class="grid gap-1 text-sm text-slate-700">
+        <span>IBAN платника</span>
+
+        <input
+          type="text"
+          formControlName="payerIban"
+          placeholder="UA..."
+          class="rounded-md border px-3 py-2 outline-none focus:border-sky-500"
+          [class.border-red-500]="
+            form.controls.payerIban.touched && form.controls.payerIban.invalid
+          "
+          [class.border-slate-300]="
+            !form.controls.payerIban.touched || form.controls.payerIban.valid
+          "
+        />
+
+        @if ( form.controls.payerIban.touched && form.controls.payerIban.hasError('required') ) {
+        <span class="text-xs text-red-600"> IBAN платника обов’язковий </span>
+        }
+      </label>
+
+      <label class="grid gap-1 text-sm text-slate-700">
+        <span>Отримувач</span>
+
+        <input
+          type="text"
+          formControlName="receiverName"
+          placeholder="Назва отримувача"
+          class="rounded-md border px-3 py-2 outline-none focus:border-sky-500"
+          [class.border-red-500]="
+            form.controls.receiverName.touched && form.controls.receiverName.invalid
+          "
+          [class.border-slate-300]="
+            !form.controls.receiverName.touched || form.controls.receiverName.valid
+          "
+        />
+
+        @if ( form.controls.receiverName.touched && form.controls.receiverName.hasError('required')
+        ) {
+        <span class="text-xs text-red-600"> Отримувач обов’язковий </span>
+        }
+      </label>
+
+      <label class="grid gap-1 text-sm text-slate-700">
+        <span>IBAN отримувача</span>
+
+        <input
+          type="text"
+          formControlName="receiverIban"
+          placeholder="UA..."
+          class="rounded-md border px-3 py-2 outline-none focus:border-sky-500"
+          [class.border-red-500]="
+            form.controls.receiverIban.touched && form.controls.receiverIban.invalid
+          "
+          [class.border-slate-300]="
+            !form.controls.receiverIban.touched || form.controls.receiverIban.valid
+          "
+        />
+
+        @if ( form.controls.receiverIban.touched && form.controls.receiverIban.hasError('required')
+        ) {
+        <span class="text-xs text-red-600"> IBAN отримувача обов’язковий </span>
+        }
+      </label>
+
+      <label class="grid gap-1 text-sm text-slate-700">
+        <span>Сума</span>
+
+        <input
+          type="number"
+          formControlName="amount"
+          step="0.01"
+          placeholder="0.00"
+          class="rounded-md border px-3 py-2 outline-none focus:border-sky-500"
+          [class.border-red-500]="form.controls.amount.touched && form.controls.amount.invalid"
+          [class.border-slate-300]="!form.controls.amount.touched || form.controls.amount.valid"
+        />
+
+        @if (form.controls.amount.touched && form.controls.amount.hasError('nonZero')) {
+        <span class="text-xs text-red-600"> Сума не може дорівнювати нулю </span>
+        } @if (form.controls.amount.touched && form.controls.amount.hasError('maximumAmount')) {
+        <span class="text-xs text-red-600"> Сума не може перевищувати 999 999,99 </span>
+        } @if (form.controls.amount.touched && form.controls.amount.hasError('maximumTwoDecimals'))
+        {
+        <span class="text-xs text-red-600"> Сума може містити максимум 2 знаки після коми </span>
+        }
+      </label>
+
+      <label class="grid gap-1 text-sm text-slate-700">
+        <span>Валюта</span>
+
+        <select
+          formControlName="currency"
+          class="rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-sky-500"
+        >
+          <option value="UAH">UAH</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+        </select>
+      </label>
+
+      <label class="grid gap-1 text-sm text-slate-700">
+        <span>Статус</span>
+
+        <select
+          formControlName="status"
+          class="rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-sky-500"
+        >
+          <option value="draft">Чернетка</option>
+          <option value="pending">Очікує підпису</option>
+          <option value="signed">Підписаний</option>
+          <option value="sent">Відправлений</option>
+          <option value="rejected">Відхилений</option>
+        </select>
+      </label>
+
+      <label class="grid gap-1 text-sm text-slate-700 md:col-span-2">
+        <span>Коментар</span>
+
+        <textarea
+          rows="4"
+          formControlName="comment"
+          placeholder="Додатковий коментар"
+          class="resize-y rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-sky-500"
+        ></textarea>
+      </label>
+    </div>
+
+    <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
+      <button
+        type="button"
+        class="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+        (click)="close()"
+      >
+        Скасувати
+      </button>
+
+      <button
+        type="submit"
+        class="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-700"
+      >
+        Зберегти
+      </button>
+    </div>
+  </form>
+</section>
