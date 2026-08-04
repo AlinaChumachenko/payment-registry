@@ -52,6 +52,8 @@
 
         @if ( form.controls.date.touched && form.controls.date.hasError('required') ) {
         <span class="text-xs text-red-600"> Дата обов’язкова </span>
+        } @if (form.controls.date.touched && form.controls.date.hasError('pastDate')) {
+        <span class="text-xs text-red-600"> Дата не може бути раніше сьогоднішньої </span>
         }
       </label>
 
@@ -94,6 +96,12 @@
 
         @if ( form.controls.payerIban.touched && form.controls.payerIban.hasError('required') ) {
         <span class="text-xs text-red-600"> IBAN платника обов’язковий </span>
+        } @if ( form.controls.payerIban.touched && form.controls.payerIban.hasError('invalidIban') )
+        {
+        <span class="text-xs text-red-600"> Невірний формат IBAN платника</span>
+        } @if ( form.controls.payerIban.touched &&
+        form.controls.payerIban.hasError('invalidIbanChecksum') ) {
+        <span class="text-xs text-red-600"> Некоректна контрольна сума IBAN платника </span>
         }
       </label>
 
@@ -128,16 +136,27 @@
           placeholder="UA..."
           class="rounded-md border px-3 py-2 outline-none focus:border-sky-500"
           [class.border-red-500]="
-            form.controls.receiverIban.touched && form.controls.receiverIban.invalid
+            form.controls.receiverIban.touched &&
+            (form.controls.receiverIban.invalid || form.hasError('sameIbans'))
           "
           [class.border-slate-300]="
-            !form.controls.receiverIban.touched || form.controls.receiverIban.valid
+            !form.controls.receiverIban.touched ||
+            (form.controls.receiverIban.valid && !form.hasError('sameIbans'))
           "
         />
 
         @if ( form.controls.receiverIban.touched && form.controls.receiverIban.hasError('required')
         ) {
         <span class="text-xs text-red-600"> IBAN отримувача обов’язковий </span>
+        } @if ( form.controls.receiverIban.touched &&
+        form.controls.receiverIban.hasError('invalidIban') ) {
+        <span class="text-xs text-red-600"> Невірний формат IBAN оримувача</span>
+        }@if ( form.controls.receiverIban.touched &&
+        form.controls.receiverIban.hasError('invalidIban') ) {
+        <span class="text-xs text-red-600"> Невірний формат IBAN отримувача </span>
+        }@if ( form.controls.receiverIban.touched &&
+        form.controls.receiverIban.hasError('invalidIbanChecksum') ) {
+        <span class="text-xs text-red-600"> Некоректна контрольна сума IBAN платника </span>
         }
       </label>
 
