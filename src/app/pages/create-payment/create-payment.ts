@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
 import {
+  AsyncValidatorFn,
   FormBuilder,
   ReactiveFormsModule,
   Validators,
@@ -7,12 +8,14 @@ import {
   ValidationErrors,
   ValidatorFn,
 } from '@angular/forms';
+import { catchError, map, of, switchMap, timer } from 'rxjs';
 
 import {
   Currency,
   PaymentStatus,
   CreatePayment as CreatePaymentPayload,
 } from '../../models/payment';
+import { PaymentsService } from '../../services/payments.service';
 
 const ibanChecksumValidator: ValidatorFn = (
   control: AbstractControl<string>
@@ -63,17 +66,23 @@ const nonZeroValidator: ValidatorFn = (
 };
 
 const maximumAmountValidator: ValidatorFn = (
-  control: AbstractControl<number>
+  control: AbstractControl<number | null>
 ): ValidationErrors | null => {
+  if (control.value === null) {
+    return null;
+  }
+
   return Math.abs(control.value) > 999_999.99 ? { maximumAmount: true } : null;
 };
 
 const maximumTwoDecimalsValidator: ValidatorFn = (
-  control: AbstractControl<number>
+  control: AbstractControl<number | null>
 ): ValidationErrors | null => {
-  const value = control.value;
+  if (control.value === null) {
+    return null;
+  }
 
-  return Number.isInteger(value * 100) ? null : { maximumTwoDecimals: true };
+  return Number.isInteger(control.value * 100) ? null : { maximumTwoDecimals: true };
 };
 
 const notPastDateValidator: ValidatorFn = (
@@ -113,14 +122,31 @@ const differentIbansValidator: ValidatorFn = (
 })
 export class CreatePayment {
   private readonly fb = inject(FormBuilder);
+  private readonly paymentsService = inject(PaymentsService);
 
   readonly closed = output<void>();
   readonly submitted = output<CreatePaymentPayload>();
+
+  private readonly uniqueDocNumberValidator: AsyncValidatorFn = (control) => {
+    const docNumber = control.value?.trim();
+
+    if (!docNumber) {
+      return of(null);
+    }
+
+    return timer(300).pipe(
+      switchMap(() => this.paymentsService.checkDocNumberExists(docNumber)),
+      map((response) => (response.exists ? { docNumberExists: true } : null)),
+      catchError(() => of(null))
+    );
+  };
 
   readonly form = this.fb.group(
     {
       docNumber: this.fb.nonNullable.control('', {
         validators: [Validators.required],
+        asyncValidators: [this.uniqueDocNumberValidator],
+        updateOn: 'change',
       }),
       date: this.fb.nonNullable.control('', {
         validators: [Validators.required, notPastDateValidator],

@@ -15,6 +15,14 @@ export class PaymentsService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = 'http://localhost:3000/payments';
 
+  checkDocNumberExists(docNumber: string): Observable<{ exists: boolean }> {
+    return this.http.get<{ exists: boolean }>(`${this.apiUrl}/check-doc-number`, {
+      params: {
+        docNumber,
+      },
+    });
+  }
+
   // Load payments from the server
   // Завантажуємо платежі із сервера
   getPayments(params: PaymentsQueryParams): Observable<PaymentsResponse> {

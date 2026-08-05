@@ -25,6 +25,7 @@ function writePayments(payments: Payment[]): void {
     'utf-8'
   );
 }
+
 // Handle payments list requests
 // Обробка запитів на отримання списку платежів
 app.get(
@@ -204,6 +205,30 @@ app.get(
         total: processedPayments.length,
       });
     }, 2000);
+  }
+);
+
+app.get(
+  '/payments/check-doc-number',
+  (
+    req: express.Request<{}, { exists: boolean }, never, { docNumber?: string }>,
+    res: express.Response<{ exists: boolean }>
+  ) => {
+    const docNumber = req.query.docNumber?.trim().toLowerCase();
+
+    if (!docNumber) {
+      return res.json({
+        exists: false,
+      });
+    }
+
+    const payments = readPayments();
+
+    const exists = payments.some((payment) => payment.docNumber.toLowerCase() === docNumber);
+
+    return res.json({
+      exists,
+    });
   }
 );
 
