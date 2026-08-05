@@ -8,6 +8,7 @@
 
     <button
       type="button"
+      [disabled]="saving()"
       class="text-2xl leading-none text-slate-400 transition hover:text-slate-700"
       aria-label="Закрити"
       (click)="close()"
@@ -239,6 +240,7 @@
     <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
       <button
         type="button"
+        [disabled]="saving()"
         class="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
         (click)="close()"
       >

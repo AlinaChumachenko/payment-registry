@@ -209,6 +209,18 @@ export class CreatePayment {
   }
 
   close(): void {
+    if (this.saving()) {
+      return;
+    }
+
+    if (this.form.dirty) {
+      const shouldClose = window.confirm('У формі є незбережені зміни. Закрити без збереження?');
+
+      if (!shouldClose) {
+        return;
+      }
+    }
+
     this.closed.emit();
   }
 }
