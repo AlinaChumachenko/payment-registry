@@ -17,7 +17,7 @@ import {
   ICellRendererParams,
 } from 'ag-grid-community';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { debounceTime, distinctUntilChanged, finalize } from 'rxjs';
 import {
   CreatePayment as CreatePaymentPayload,
   Currency,
@@ -46,6 +46,8 @@ export class PaymentsPage {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   readonly isCreatePaymentOpen = signal(false);
+  readonly isCreatingPayment = signal(false);
+  readonly createPaymentError = signal<string | null>(null);
 
   readonly filtersForm = this.fb.group({
     docNumber: this.fb.nonNullable.control(''),
@@ -288,16 +290,28 @@ export class PaymentsPage {
   }
 
   createPayment(payment: CreatePaymentPayload): void {
+    if (this.isCreatingPayment()) {
+      return;
+    }
+
+    this.isCreatingPayment.set(true);
+    this.createPaymentError.set(null);
+
     this.paymentsService
       .createPayment(payment)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.isCreatingPayment.set(false);
+        })
+      )
       .subscribe({
         next: () => {
           this.closeCreatePayment();
           this.paymentsStore.loadPayments();
         },
         error: () => {
-          console.error('Не вдалося створити платіж');
+          this.createPaymentError.set('Не вдалося створити платіж. Спробуйте ще раз.');
         },
       });
   }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import {
   AsyncValidatorFn,
   FormBuilder,
@@ -126,6 +126,9 @@ export class CreatePayment {
 
   readonly closed = output<void>();
   readonly submitted = output<CreatePaymentPayload>();
+
+  readonly saving = input(false);
+  readonly saveError = input<string | null>(null);
 
   private readonly uniqueDocNumberValidator: AsyncValidatorFn = (control) => {
     const docNumber = control.value?.trim();

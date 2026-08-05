@@ -245,7 +245,12 @@
     aria-labelledby="create-payment-title"
   >
     <div class="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
-      <app-create-payment (closed)="closeCreatePayment()" (submitted)="createPayment($event)" />
+      <app-create-payment
+        [saving]="isCreatingPayment()"
+        [saveError]="createPaymentError()"
+        (closed)="closeCreatePayment()"
+        (submitted)="createPayment($event)"
+      />
     </div>
   </div>
   }

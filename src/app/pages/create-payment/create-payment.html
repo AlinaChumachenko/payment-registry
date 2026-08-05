@@ -158,13 +158,12 @@
         <span class="text-xs text-red-600"> IBAN отримувача обов’язковий </span>
         } @if ( form.controls.receiverIban.touched &&
         form.controls.receiverIban.hasError('invalidIban') ) {
-        <span class="text-xs text-red-600"> Невірний формат IBAN оримувача</span>
-        }@if ( form.controls.receiverIban.touched &&
-        form.controls.receiverIban.hasError('invalidIban') ) {
         <span class="text-xs text-red-600"> Невірний формат IBAN отримувача </span>
-        }@if ( form.controls.receiverIban.touched &&
+        } @if ( form.controls.receiverIban.touched &&
         form.controls.receiverIban.hasError('invalidIbanChecksum') ) {
-        <span class="text-xs text-red-600"> Некоректна контрольна сума IBAN платника </span>
+        <span class="text-xs text-red-600"> Некоректна контрольна сума IBAN отримувача </span>
+        } @if ( form.controls.receiverIban.touched && form.hasError('sameIbans') ) {
+        <span class="text-xs text-red-600"> IBAN платника та отримувача мають відрізнятися </span>
         }
       </label>
 
@@ -231,6 +230,12 @@
       </label>
     </div>
 
+    @if (saveError()) {
+    <div class="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ saveError() }}
+    </div>
+    }
+
     <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
       <button
         type="button"
@@ -244,7 +249,7 @@
         type="submit"
         class="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-700"
       >
-        Зберегти
+        {{ saving() ? 'Збереження...' : 'Зберегти' }}
       </button>
     </div>
   </form>
