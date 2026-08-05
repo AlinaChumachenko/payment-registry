@@ -49,6 +49,9 @@ export class PaymentsPage {
   readonly isCreatingPayment = signal(false);
   readonly createPaymentError = signal<string | null>(null);
 
+  readonly editingPayment = signal<Payment | null>(null);
+  readonly isEditingPayment = computed(() => this.editingPayment() !== null);
+
   readonly filtersForm = this.fb.group({
     docNumber: this.fb.nonNullable.control(''),
     payerName: this.fb.nonNullable.control(''),
@@ -161,6 +164,43 @@ export class PaymentsPage {
     {
       field: 'comment',
       headerName: 'Comment',
+    },
+    {
+      headerName: 'Дії',
+      colId: 'actions',
+      sortable: false,
+      filter: false,
+      pinned: 'right',
+      width: 130,
+      cellRenderer: (params: ICellRendererParams<Payment>) => {
+        const button = document.createElement('button');
+
+        button.type = 'button';
+        button.textContent = 'Редагувати';
+
+        button.className = [
+          'rounded-md',
+          'border',
+          'border-slate-300',
+          'bg-white',
+          'px-3',
+          'py-1.5',
+          'text-sm',
+          'text-slate-700',
+          'transition',
+          'hover:bg-slate-100',
+        ].join(' ');
+
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+
+          if (params.data) {
+            this.openEditPayment(params.data);
+          }
+        });
+
+        return button;
+      },
     },
   ];
 
@@ -289,7 +329,7 @@ export class PaymentsPage {
     this.router.navigate(['/payments', payment.id]);
   }
 
-  createPayment(payment: CreatePaymentPayload): void {
+  savePayment(payment: CreatePaymentPayload): void {
     if (this.isCreatingPayment()) {
       return;
     }
@@ -297,8 +337,13 @@ export class PaymentsPage {
     this.isCreatingPayment.set(true);
     this.createPaymentError.set(null);
 
-    this.paymentsService
-      .createPayment(payment)
+    const currentPayment = this.editingPayment();
+
+    const request$ = currentPayment
+      ? this.paymentsService.updatePayment(currentPayment.id, payment)
+      : this.paymentsService.createPayment(payment);
+
+    request$
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
@@ -311,17 +356,30 @@ export class PaymentsPage {
           this.paymentsStore.loadPayments();
         },
         error: () => {
-          this.createPaymentError.set('Не вдалося створити платіж. Спробуйте ще раз.');
+          this.createPaymentError.set(
+            currentPayment
+              ? 'Не вдалося оновити платіж. Спробуйте ще раз.'
+              : 'Не вдалося створити платіж. Спробуйте ще раз.'
+          );
         },
       });
   }
 
   openCreatePayment(): void {
+    this.editingPayment.set(null);
+    this.createPaymentError.set(null);
+    this.isCreatePaymentOpen.set(true);
+  }
+
+  openEditPayment(payment: Payment): void {
+    this.editingPayment.set(payment);
+    this.createPaymentError.set(null);
     this.isCreatePaymentOpen.set(true);
   }
 
   closeCreatePayment(): void {
     this.isCreatePaymentOpen.set(false);
+    this.editingPayment.set(null);
   }
   retryLoad(): void {
     this.paymentsStore.loadPayments();

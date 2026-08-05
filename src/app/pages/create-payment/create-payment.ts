@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  effect,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+} from '@angular/core';
 import {
   AsyncValidatorFn,
   FormBuilder,
@@ -12,6 +20,7 @@ import { catchError, map, of, switchMap, timer } from 'rxjs';
 
 import {
   Currency,
+  Payment,
   PaymentStatus,
   CreatePayment as CreatePaymentPayload,
 } from '../../models/payment';
@@ -130,6 +139,10 @@ export class CreatePayment {
   readonly saving = input(false);
   readonly saveError = input<string | null>(null);
 
+  readonly payment = input<Payment | null>(null);
+
+  readonly isEditMode = computed(() => this.payment() !== null);
+
   private readonly uniqueDocNumberValidator: AsyncValidatorFn = (control) => {
     const docNumber = control.value?.trim();
 
@@ -137,6 +150,11 @@ export class CreatePayment {
       return of(null);
     }
 
+    const currentPayment = this.payment();
+
+    if (currentPayment && currentPayment.docNumber.toLowerCase() === docNumber.toLowerCase()) {
+      return of(null);
+    }
     return timer(300).pipe(
       switchMap(() => this.paymentsService.checkDocNumberExists(docNumber)),
       map((response) => (response.exists ? { docNumberExists: true } : null)),
@@ -188,6 +206,31 @@ export class CreatePayment {
       validators: [differentIbansValidator],
     }
   );
+
+  constructor() {
+    effect(() => {
+      const payment = this.payment();
+
+      if (!payment) {
+        return;
+      }
+
+      this.form.patchValue({
+        docNumber: payment.docNumber,
+        date: payment.date.slice(0, 10),
+        payerName: payment.payerName,
+        payerIban: payment.payerIban,
+        receiverName: payment.receiverName,
+        receiverIban: payment.receiverIban,
+        amount: payment.amount,
+        currency: payment.currency,
+        status: payment.status,
+        comment: payment.comment,
+      });
+
+      this.form.markAsPristine();
+    });
+  }
 
   onSubmit(): void {
     if (this.form.invalid) {

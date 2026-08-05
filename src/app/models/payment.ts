@@ -1,6 +1,7 @@
 export type Currency = 'UAH' | 'EUR' | 'USD';
 export type PaymentStatus = 'draft' | 'pending' | 'signed' | 'sent' | 'rejected';
 export type CreatePayment = Omit<Payment, 'id'>;
+export type UpdatePayment = Partial<CreatePayment>;
 export interface Payment {
   id: string;
   docNumber: string;

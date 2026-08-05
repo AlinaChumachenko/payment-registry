@@ -1,9 +1,17 @@
 <section class="grid gap-6">
   <div class="flex items-start justify-between gap-4">
     <div>
-      <h2 id="create-payment-title" class="text-2xl font-semibold text-slate-800">Новий платіж</h2>
+      <h2 id="create-payment-title" class="text-2xl font-semibold text-slate-800">
+        {{ isEditMode() ? 'Редагування платежу' : 'Новий платіж' }}
+      </h2>
 
-      <p class="mt-1 text-sm text-slate-500">Заповніть реквізити платіжної операції</p>
+      <p class="mt-1 text-sm text-slate-500">
+        {{
+          isEditMode()
+            ? 'Внесіть зміни до реквізитів платіжної операції'
+            : 'Заповніть реквізити платіжної операції'
+        }}
+      </p>
     </div>
 
     <button
@@ -251,7 +259,15 @@
         type="submit"
         class="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-700"
       >
-        {{ saving() ? 'Збереження...' : 'Зберегти' }}
+        {{
+          saving()
+            ? isEditMode()
+              ? 'Оновлення...'
+              : 'Збереження...'
+            : isEditMode()
+            ? 'Оновити'
+            : 'Зберегти'
+        }}
       </button>
     </div>
   </form>

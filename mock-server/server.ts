@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { CreatePayment, Payment } from '../src/app/models/payment';
+import { CreatePayment, Payment, UpdatePayment } from '../src/app/models/payment';
 
 const app = express();
 const PORT = 3000;
@@ -266,6 +266,38 @@ app.post(
     writePayments(payments);
 
     return res.status(201).json(newPayment);
+  }
+);
+
+app.patch(
+  '/payments/:id',
+  (
+    req: express.Request<{ id: string }, Payment | { message: string }, UpdatePayment>,
+    res: express.Response<Payment | { message: string }>
+  ) => {
+    const payments = readPayments();
+
+    const paymentIndex = payments.findIndex((payment) => payment.id === req.params.id);
+
+    if (paymentIndex === -1) {
+      return res.status(404).json({
+        message: 'Платіж не знайдено',
+      });
+    }
+
+    const currentPayment = payments[paymentIndex];
+
+    const updatedPayment: Payment = {
+      ...currentPayment,
+      ...req.body,
+      id: currentPayment.id,
+    };
+
+    payments[paymentIndex] = updatedPayment;
+
+    writePayments(payments);
+
+    return res.json(updatedPayment);
   }
 );
 
