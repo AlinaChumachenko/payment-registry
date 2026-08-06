@@ -138,4 +138,15 @@ export class PaymentsStore {
     this.pageState.set(1);
     this.loadPayments();
   }
+
+  deletePayment(id: string): void {
+    this.paymentsService.deletePayment(id).subscribe({
+      next: () => {
+        this.loadPayments();
+      },
+      error: () => {
+        this.errorState.set('Не вдалося видалити платіж');
+      },
+    });
+  }
 }

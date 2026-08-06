@@ -173,25 +173,15 @@ export class PaymentsPage {
       pinned: 'right',
       width: 130,
       cellRenderer: (params: ICellRendererParams<Payment>) => {
-        const button = document.createElement('button');
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex h-full min-w-max items-center justify-center gap-1';
+        const editButton = document.createElement('button');
+        editButton.type = 'button';
+        editButton.textContent = 'Редагувати';
+        editButton.className =
+          'flex h-8 items-center justify-center rounded border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-100 shrink-0';
 
-        button.type = 'button';
-        button.textContent = 'Редагувати';
-
-        button.className = [
-          'rounded-md',
-          'border',
-          'border-slate-300',
-          'bg-white',
-          'px-3',
-          'py-1.5',
-          'text-sm',
-          'text-slate-700',
-          'transition',
-          'hover:bg-slate-100',
-        ].join(' ');
-
-        button.addEventListener('click', (event) => {
+        editButton.addEventListener('click', (event) => {
           event.stopPropagation();
 
           if (params.data) {
@@ -199,7 +189,25 @@ export class PaymentsPage {
           }
         });
 
-        return button;
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.textContent = '🗑';
+
+        deleteButton.className =
+          'flex h-8 w-8 shrink-0 items-center justify-center rounded border border-red-300 bg-white text-red-500 transition-colors hover:bg-red-50 hover:text-red-700';
+
+        deleteButton.addEventListener('click', (event) => {
+          event.stopPropagation();
+
+          if (params.data) {
+            this.deletePayment(params.data);
+          }
+        });
+
+        wrapper.append(editButton);
+        wrapper.append(deleteButton);
+
+        return wrapper;
       },
     },
   ];
@@ -375,6 +383,26 @@ export class PaymentsPage {
     this.editingPayment.set(payment);
     this.createPaymentError.set(null);
     this.isCreatePaymentOpen.set(true);
+  }
+
+  deletePayment(payment: Payment): void {
+    const confirmed = window.confirm(`Видалити платіж ${payment.docNumber}?`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.paymentsService
+      .deletePayment(payment.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.paymentsStore.loadPayments();
+        },
+        error: () => {
+          alert('Не вдалося видалити платіж');
+        },
+      });
   }
 
   closeCreatePayment(): void {

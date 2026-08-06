@@ -23,13 +23,6 @@ export class PaymentDetailsPage {
   readonly paymentId = this.route.snapshot.paramMap.get('id');
   readonly payment = signal<Payment | null>(null);
 
-  // readonly statusLabels: Record<Payment['status'], string> = {
-  //   draft: 'Чернетка',
-  //   pending: 'Очікує підпису',
-  //   signed: 'Підписаний',
-  //   sent: 'Відправлений',
-  //   rejected: 'Відхилений',
-  // };
   constructor() {
     if (!this.paymentId) {
       return;

@@ -301,6 +301,30 @@ app.patch(
   }
 );
 
+app.delete(
+  '/payments/:id',
+  (
+    req: express.Request<{ id: string }, void | { message: string }>,
+    res: express.Response<void | { message: string }>
+  ) => {
+    const payments = readPayments();
+
+    const paymentIndex = payments.findIndex((payment) => payment.id === req.params.id);
+
+    if (paymentIndex === -1) {
+      return res.status(404).json({
+        message: 'Платіж не знайдено',
+      });
+    }
+
+    payments.splice(paymentIndex, 1);
+
+    writePayments(payments);
+
+    return res.status(204).send();
+  }
+);
+
 app.listen(PORT, () => {
   console.log(`Mock server listening on port ${PORT}`);
 });
