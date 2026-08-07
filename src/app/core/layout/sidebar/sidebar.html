@@ -1,10 +1,36 @@
 <aside class="h-full border-r border-slate-200 bg-slate-900 px-3 py-5">
-  <nav>
-    <a
-      href="#"
-      class="flex items-center rounded-lg bg-cyan-500 px-4 py-3 text-sm font-medium text-white"
+  <nav class="grid gap-2 p-4">
+    <button
+      type="button"
+      class="flex items-center gap-3 rounded-lg bg-sky-500 px-4 py-3 text-left text-sm font-medium text-white transition hover:bg-sky-600"
+      routerLink="/"
     >
-      Реєстр платежів
-    </a>
+      <span>Головна</span>
+    </button>
+    <button
+      type="button"
+      class="flex items-center gap-3 rounded-lg bg-sky-500 px-4 py-3 text-left text-sm font-medium text-white transition hover:bg-sky-600"
+      routerLink="/payments"
+    >
+      <span>Реєстр платежів</span>
+    </button>
+
+    <button
+      type="button"
+      class="flex items-center gap-3 rounded-lg bg-sky-500 px-4 py-3 text-left text-sm font-medium text-white transition hover:bg-sky-600"
+      (click)="paymentsUi.requestCreatePayment()"
+    >
+      <span>Новий платіж</span>
+    </button>
+
+    <button
+      type="button"
+      class="flex items-center gap-3 rounded-lg bg-sky-500 px-4 py-3 text-left text-sm font-medium text-white transition hover:bg-sky-600"
+      (click)="paymentsUi.toggleFilters()"
+    >
+      <span>
+        {{ paymentsUi.filtersOpen() ? 'Сховати фільтри' : 'Показати фільтри' }}
+      </span>
+    </button>
   </nav>
 </aside>

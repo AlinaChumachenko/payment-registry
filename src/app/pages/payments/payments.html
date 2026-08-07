@@ -5,17 +5,10 @@
 
       <p class="mt-1 text-sm">Перегляд та управління платіжними операціями</p>
     </div>
-
-    <button
-      type="button"
-      class="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-700"
-      (click)="openCreatePayment()"
-    >
-      Новий платіж
-    </button>
   </div>
   <p class="mt-1 text-sm text-slate-500">Усього платежів: {{ total() }}</p>
 
+  @if (isFiltersOpen()) {
   <form
     class="grid gap-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
     [formGroup]="filtersForm"
@@ -148,8 +141,7 @@
       </label>
     </div>
   </form>
-
-  @if (error()) {
+  } @if (error()) {
   <div class="flex items-center justify-between gap-4 rounded-lg bg-red-50 p-3">
     <p class="text-sm text-red-700">
       {{ error() }}

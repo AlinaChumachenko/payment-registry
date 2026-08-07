@@ -3,6 +3,7 @@ import {
   Component,
   DestroyRef,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -28,6 +29,7 @@ import { PaymentsStore } from '../../stores/payments.store';
 import { PAYMENT_STATUS_LABELS, formatPaymentAmount } from '../../shared/payment-formatters';
 import { CreatePayment } from '../create-payment/create-payment';
 import { PaymentsService } from '../../services/payments.service';
+import { PaymentsUiService } from '../../services/payments-ui.service';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 @Component({
@@ -45,9 +47,13 @@ export class PaymentsPage {
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly paymentsUi = inject(PaymentsUiService);
+
   readonly isCreatePaymentOpen = signal(false);
   readonly isCreatingPayment = signal(false);
   readonly createPaymentError = signal<string | null>(null);
+  readonly isFiltersOpen = this.paymentsUi.filtersOpen;
+  readonly isRegistryOpen = this.paymentsUi.registryOpen;
 
   readonly editingPayment = signal<Payment | null>(null);
   readonly isEditingPayment = computed(() => this.editingPayment() !== null);
@@ -299,6 +305,26 @@ export class PaymentsPage {
           queryParamsHandling: 'merge',
         });
       });
+
+    effect(() => {
+      const request = this.paymentsUi.createPaymentRequest();
+
+      if (request === 0) {
+        return;
+      }
+
+      this.openCreatePayment();
+    });
+
+    // effect(() => {
+    //   const request = this.paymentsUi.registryRequest();
+
+    //   if (request === 0) {
+    //     return;
+    //   }
+
+    //   this.scrollToRegistry();
+    // });
   }
 
   goToPreviousPage(): void {
@@ -412,6 +438,17 @@ export class PaymentsPage {
   retryLoad(): void {
     this.paymentsStore.loadPayments();
   }
+
+  toggleFilters(): void {
+    this.isFiltersOpen.update((value) => !value);
+  }
+
+  // scrollToRegistry(): void {
+  //   document.getElementById('payments-registry')?.scrollIntoView({
+  //     behavior: 'smooth',
+  //     block: 'start',
+  //   });
+  // }
   resetFilters(): void {
     this.filtersForm.reset({
       docNumber: '',

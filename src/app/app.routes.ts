@@ -7,7 +7,12 @@ export const routes: Routes = [
     component: MainLayout,
     children: [
       {
+        pathMatch: 'full',
         path: '',
+        loadComponent: () => import('./pages/home/home').then((m) => m.Home),
+      },
+      {
+        path: 'payments',
         loadComponent: () => import('./pages/payments/payments').then((m) => m.PaymentsPage),
       },
       {
