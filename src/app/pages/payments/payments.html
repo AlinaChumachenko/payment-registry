@@ -187,6 +187,11 @@
       class="payments-grid"
       [columnDefs]="columnDefs"
       [rowData]="rowData()"
+      [rowSelection]="{
+        mode: 'multiRow',
+        selectAll: 'currentPage'
+      }"
+      (selectionChanged)="onSelectionChanged($event)"
       (sortChanged)="onSortChanged($event)"
       (rowClicked)="onRowClicked($event.data)"
     ></ag-grid-angular>

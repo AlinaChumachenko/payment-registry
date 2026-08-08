@@ -16,6 +16,7 @@ import {
   ModuleRegistry,
   SortChangedEvent,
   ICellRendererParams,
+  SelectionChangedEvent,
 } from 'ag-grid-community';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, finalize } from 'rxjs';
@@ -58,6 +59,10 @@ export class PaymentsPage {
   readonly editingPayment = signal<Payment | null>(null);
   readonly isEditingPayment = computed(() => this.editingPayment() !== null);
 
+  readonly selectedPayments = signal<Payment[]>([]);
+
+  readonly selectedCount = computed(() => this.selectedPayments().length);
+
   readonly filtersForm = this.fb.group({
     docNumber: this.fb.nonNullable.control(''),
     payerName: this.fb.nonNullable.control(''),
@@ -92,11 +97,11 @@ export class PaymentsPage {
   readonly columnDefs: ColDef<Payment>[] = [
     {
       field: 'docNumber',
-      headerName: 'Document №',
+      headerName: 'Дкумент №',
     },
     {
       field: 'date',
-      headerName: 'Date',
+      headerName: 'Дата',
       valueFormatter: (params) =>
         new Intl.DateTimeFormat('uk-UA', {
           day: '2-digit',
@@ -108,23 +113,23 @@ export class PaymentsPage {
     },
     {
       field: 'payerName',
-      headerName: 'Payer',
+      headerName: 'Платник',
     },
     {
       field: 'payerIban',
-      headerName: 'Payer IBAN',
+      headerName: 'IBAN платника',
     },
     {
       field: 'receiverName',
-      headerName: 'Receiver',
+      headerName: 'Отримувач',
     },
     {
       field: 'receiverIban',
-      headerName: 'Receiver IBAN',
+      headerName: 'IBAN отримувача',
     },
     {
       field: 'amount',
-      headerName: 'Amount',
+      headerName: 'Сума',
       valueFormatter: (params) => formatPaymentAmount(params.value),
       cellClassRules: {
         'text-red-600': (params) => params.value < 0,
@@ -132,7 +137,7 @@ export class PaymentsPage {
     },
     {
       field: 'currency',
-      headerName: 'Currency',
+      headerName: 'Валюта',
     },
     {
       field: 'status',
@@ -169,7 +174,7 @@ export class PaymentsPage {
     },
     {
       field: 'comment',
-      headerName: 'Comment',
+      headerName: 'Коментар',
     },
     {
       headerName: 'Дії',
@@ -315,16 +320,6 @@ export class PaymentsPage {
 
       this.openCreatePayment();
     });
-
-    // effect(() => {
-    //   const request = this.paymentsUi.registryRequest();
-
-    //   if (request === 0) {
-    //     return;
-    //   }
-
-    //   this.scrollToRegistry();
-    // });
   }
 
   goToPreviousPage(): void {
@@ -353,6 +348,10 @@ export class PaymentsPage {
   // Змінюємо розмір сторінки
   changePageSize(size: number): void {
     this.paymentsStore.setPageSize(size);
+  }
+
+  onSelectionChanged(event: SelectionChangedEvent<Payment>): void {
+    this.selectedPayments.set(event.api.getSelectedRows());
   }
 
   onRowClicked(payment: Payment | undefined): void {
@@ -443,12 +442,6 @@ export class PaymentsPage {
     this.isFiltersOpen.update((value) => !value);
   }
 
-  // scrollToRegistry(): void {
-  //   document.getElementById('payments-registry')?.scrollIntoView({
-  //     behavior: 'smooth',
-  //     block: 'start',
-  //   });
-  // }
   resetFilters(): void {
     this.filtersForm.reset({
       docNumber: '',
